@@ -1,5 +1,5 @@
 import numpy as np
-from losses.base import Loss
+from nnf.losses.base import Loss
 
 class MSE(Loss):
     """
