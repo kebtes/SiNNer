@@ -1,4 +1,6 @@
-class Activation:
+from nnf.layers.base import Layer
+
+class Activation(Layer):
     """
     -----------------------------------
     BASE CLASS FOR ACTIVATION FUNCTIONS
