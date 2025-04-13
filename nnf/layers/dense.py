@@ -1,5 +1,5 @@
 import numpy as np
-from layers.layer import Layer
+from nnf.layers.base import Layer
 
 class Dense(Layer):
     """
@@ -15,9 +15,9 @@ class Dense(Layer):
         super().__init__()
 
         # Initlize weights with random values, biases with zeros
-        self.weights = 0.01 * np.random.randn(n_inputs, n_neurons) 
+        self.weights = 0.1 * np.random.randn(n_inputs, n_neurons) 
         self.biases = np.zeros(shape=(1, n_neurons))
-
+        
         # Gradients
         self.dweights = None
         self.dbiases = None
