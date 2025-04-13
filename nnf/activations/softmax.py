@@ -1,5 +1,5 @@
 import numpy as np
-from activations.base import Activation
+from nnf.activations.base import Activation
 
 class Softmax(Activation):
     """

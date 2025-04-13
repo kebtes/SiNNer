@@ -1,5 +1,5 @@
 import numpy as np
-from activations.base import Activation
+from nnf.activations.base import Activation
 
 class Sigmoid(Activation):
     """
@@ -16,7 +16,7 @@ class Sigmoid(Activation):
         """
         self.inputs = inputs
         self.output = 1 / (1 + np.exp(-inputs))
-        return self.ouputs
+        return self.output
     
     def backward(self, dvalues):
         """
@@ -25,5 +25,5 @@ class Sigmoid(Activation):
         """
 
         # derivative of the sigmoid: f'(x) = f(x) * (1 - f(x))
-        self.dinputs = dvalues * self.output * (1 - self.output)
+        self.dinputs = dvalues * (self.output * (1 - self.output))
         return self.dinputs
