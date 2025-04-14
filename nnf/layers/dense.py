@@ -14,6 +14,12 @@ class Dense(Layer):
         """
         super().__init__()
 
+        self.n_inputs = n_inputs
+        self.n_neurons = n_neurons
+
+        # Dense layer have weights hense trainable
+        self.trainable = True
+
         # Initlize weights with random values, biases with zeros
         self.weights = 0.1 * np.random.randn(n_inputs, n_neurons) 
         self.biases = np.zeros(shape=(1, n_neurons))
@@ -21,6 +27,9 @@ class Dense(Layer):
         # Gradients
         self.dweights = None
         self.dbiases = None
+
+        # Parameters
+        self.params = self.weights.size + self.biases.size
 
     def forward(self, inputs):
         """
