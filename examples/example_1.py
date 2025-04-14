@@ -110,7 +110,7 @@ def main():
     correct_pred = 0
     for pred, act in zip(predictions, y_test):
         predicted_label = int(pred[0] > 0.5)
-        print(f"True: {int(act[0])}, Predicted: {predicted_label} ({pred[0]:.4f})")
+        # print(f"True: {int(act[0])}, Predicted: {predicted_label} ({pred[0]:.4f})")
 
         if predicted_label == act[0]:
             correct_pred += 1

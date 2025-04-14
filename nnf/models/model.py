@@ -1,6 +1,8 @@
 import math
 from typing import List
 
+from tqdm import tqdm
+
 from nnf.layers.base import Layer
 from nnf.losses.base import Loss
 from nnf.optimizers.base import Optimizer
@@ -87,7 +89,8 @@ class Model:
         for epoch in range(1, epochs + 1):
             loss = 0
 
-            for step in range(steps):
+            step_progress = tqdm(range(steps), desc= f"Epoch {epoch}", ncols=None, unit="steps")
+            for step in step_progress:
                 batch_start = step * batch_size
                 batch_end = min(batch_start + batch_size, len(X))
 
@@ -107,7 +110,9 @@ class Model:
 
                 self.optimizer.post_update_params()
 
-            print(f"Epoch: {epoch}, Loss: {loss}")
+            step_progress.set_postfix(loss=loss)
+            step_progress.update(1)
+            # print(f"Epoch: {epoch}, Loss: {loss}")
 
     def predict(self, X):
         """
@@ -120,3 +125,4 @@ class Model:
             Predictions from the model.
         """
         return self.forward(X)
+    
