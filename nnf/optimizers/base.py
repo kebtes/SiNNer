@@ -13,6 +13,8 @@ class Optimizer:
         self.decay = decay
         self.iterations = 0
 
+        self.name = self.__class__.__name__
+
     
     def pre_update_params(self):
         """
