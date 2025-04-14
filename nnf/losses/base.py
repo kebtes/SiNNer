@@ -7,6 +7,9 @@ class Loss:
     --------------------------------
     """
 
+    def __init__(self):
+        self.name = self.__class__.__name__
+
     def calculate(self, output, y):
         """
         The function calculates the mean loss across all samples in a batch based on the output and
