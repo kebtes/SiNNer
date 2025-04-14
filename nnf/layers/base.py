@@ -6,6 +6,13 @@ class Layer(ABC):
         self.output = None
         self.dinputs = None
 
+        self.n_inputs = None
+        self.n_neurons = None
+
+        self.trainable = False
+        
+        self.name = self.__class__.__name__
+    
     @abstractmethod
     def forward(self, inputs):
         pass
