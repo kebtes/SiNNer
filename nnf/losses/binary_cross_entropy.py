@@ -43,6 +43,7 @@ class BinaryCrossEntropy(Loss):
     """
 
     def __init__(self):
+        super().__init__()
         self.output = None
         self.dinputs = None
 
