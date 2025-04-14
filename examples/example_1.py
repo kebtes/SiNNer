@@ -14,7 +14,8 @@ Key Steps:
 2. **Preprocessing**:
     - The labels (`y_train` and `y_test`) are extracted as the first column.
     - The pixel values (`X_train`, `X_test`) are normalized to the range [0, 1].
-    - Only examples labeled `0` or `1` are retained, turning this into a binary classification problem.
+    - Only examples labeled `0` or `1` are retained, turning this into a binary classification 
+        problem.
 
 3. **Model Architecture**:
     - The neural network has the following architecture:
@@ -41,9 +42,11 @@ Then run the script using:
 
 """
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
+
 from nnf.layers import Dense
 from nnf.activations import ReLU, Sigmoid
 from nnf.losses import BinaryCrossEntropy
@@ -55,8 +58,8 @@ np.random.seed(42)
 def main():
     base_path = Path(__file__).resolve().parent.parent
 
-    train_path = base_path / 'resources' / 'mnist' / 'mnist_train.csv'
-    test_path = base_path / 'resources' / 'mnist' / 'mnist_test.csv'
+    train_path = base_path / "resources" / "mnist" / "mnist_train.csv"
+    test_path = base_path / "resources" / "mnist" / "mnist_test.csv"
 
     # Read CSVs
     df_train = pd.read_csv(train_path)
@@ -65,7 +68,7 @@ def main():
     # training sets
     X_train = df_train.iloc[:, 1:].values.astype(np.float32)
     y_train = df_train.iloc[:, 0].values.reshape(-1, 1)
-    
+
     # test sets
     y_test = df_test.iloc[:, 0].values.reshape(-1, 1)
     X_test = df_test.iloc[:, 1:].values.astype(np.float32)
@@ -91,15 +94,14 @@ def main():
         Dense(64, 32),
         ReLU(),
         Dense(32, 1),
-        Sigmoid()
+        Sigmoid(),
     )
 
     model.set(
-        loss=BinaryCrossEntropy(), 
-        optimzer=GradientDescent(
-            learning_rate=0.01, decay=None)
-        )
-    
+        loss=BinaryCrossEntropy(),
+        optimizer=GradientDescent(learning_rate=0.01, decay=None),
+    )
+
     model.train(X_train, y_train, epochs=100)
 
     print("\nMaking predictions:")
@@ -112,8 +114,9 @@ def main():
 
         if predicted_label == act[0]:
             correct_pred += 1
-    
+
     print(f"Accuracy: {correct_pred / len(predictions):.4f}")
-        
+
+
 if __name__ == "__main__":
     main()
