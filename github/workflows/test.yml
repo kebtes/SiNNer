@@ -27,5 +27,4 @@ jobs:
 
       - name: Set Python Path and Run Tests
         run: |
-          export PYTHONPATH=$(pwd)
           pytest tests/
