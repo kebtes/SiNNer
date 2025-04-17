@@ -2,7 +2,7 @@ import numpy as np
 from nnf.losses.base import Loss
 
 
-class CrossEntropy(Loss):
+class CategoricalCrossEntropy(Loss):
     """
     ----------------------------------------
     CATEGORICAL CROSS ENTROPY LOSS FUNCTION.
