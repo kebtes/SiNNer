@@ -1,4 +1,5 @@
 import math
+import numpy as np
 from typing import List
 
 from tqdm import tqdm
@@ -34,6 +35,9 @@ class Model:
 
         self.loss: Loss = None
         self.optimizer: Optimizer = None
+
+        self.clip_value = 1.0
+        self.shuffle = False
 
     def set(self, loss: Loss, optimizer: Optimizer):
         """
@@ -92,6 +96,12 @@ class Model:
         for epoch in range(1, epochs + 1):
             loss = 0
 
+            if self.shuffle:
+                indices = np.arange(len(X))
+                np.random.shuffle(indices)
+                X = X[indices]
+                y = y[indices]
+
             step_progress = tqdm(range(steps), desc= f"Epoch {epoch}", ncols=None, unit="steps")
             for step in step_progress:
                 batch_start = step * batch_size
@@ -109,13 +119,19 @@ class Model:
 
                 for layer in self.layers:
                     if layer.trainable:
+                        # Apply gradient clipping to prevent exploding gradients during backpropagation
+                        np.clip(layer.dweights, -self.clip_value, self.clip_value, out=layer.dweights)
+                        np.clip(layer.dbiases, -self.clip_value, self.clip_value, out=layer.dbiases)
+
                         self.optimizer.update_params(layer)
 
                 self.optimizer.post_update_params()
 
-            step_progress.set_postfix(loss=loss)
+
+            avg_loss = loss / steps
+            step_progress.set_postfix(loss=avg_loss)
             step_progress.update(1)
-            # print(f"Epoch: {epoch}, Loss: {loss}")
+            print(f"Loss: {avg_loss}")
 
     def predict(self, X):
         """
@@ -203,5 +219,3 @@ class Model:
         print(f"\nTotal Layers: {len(self.layers)}")
         print(f"Total parameters: {total_params:,}")  # Formatting the total parameters with commas
         print(f"Loss: {self.loss.name}")
-        print(f"Input Shape: (None, {self.layers[0].n_inputs})")
-        print(f"Output Shape: (None, {prev_output})")
