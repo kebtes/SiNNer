@@ -6,7 +6,9 @@ class Activation(Layer):
     BASE CLASS FOR ACTIVATION FUNCTIONS
     -----------------------------------
     """
-
+    def __init__(self):
+        super().__init__()
+        
     def forward(self, inputs):
         raise NotImplementedError
     

@@ -37,6 +37,7 @@ from nnf.activations.base import Activation
 
 class Softmax(Activation):
     def __init__(self):
+        super().__init__()
         self.inputs = None
         self.output = None
         self.dinputs = None
@@ -53,14 +54,15 @@ class Softmax(Activation):
         """
         self.inputs = inputs
 
+        # Sanity check to see if inputs are valid to work with
+        if np.isnan(inputs).any() or np.isinf(inputs).any():
+            raise ValueError("NaN values detected in Softmax output.")
+        
         # Subtract the max value for numerical stability
         # This won't cause any error as Softmax isn't scale dependent
         exponent_values = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
 
         probabilites = exponent_values / np.sum(exponent_values, axis=1, keepdims=True)
-    
-        if np.isnan(probabilites).any():
-            raise ValueError("NaN values detected in Softmax output.")
         
         self.output = probabilites
         return self.output
