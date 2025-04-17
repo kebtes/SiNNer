@@ -21,7 +21,8 @@ class Dense(Layer):
         self.trainable = True
 
         # Initlize weights with random values, biases with zeros
-        self.weights = 0.1 * np.random.randn(n_inputs, n_neurons) 
+        # self.weights = 0.1 * np.random.randn(n_inputs, n_neurons) 
+        self.weights = np.random.randn(n_inputs, n_neurons) * np.sqrt(2.0 / (n_inputs + n_neurons))
         self.biases = np.zeros(shape=(1, n_neurons))
         
         # Gradients
