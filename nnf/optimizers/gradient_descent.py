@@ -24,3 +24,7 @@ class GradientDescent(Optimizer):
 
         if layer.biases is not None:
             layer.biases -= self.current_learning_rate * layer.dbiases
+
+    def pre_update_params(self):
+        self.iterations += 1
+        self.current_learning_rate = self.learning_rate / (1.0 + self.decay * self.iterations)
