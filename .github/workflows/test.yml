@@ -28,3 +28,6 @@ jobs:
       - name: Set Python Path and Run Tests
         run: |
           pytest tests/
+
+      - name: Disable Git LFS in CI
+        run: git lfs install --skip-smudge

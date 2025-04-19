@@ -47,6 +47,10 @@ class BinaryCrossEntropy(Loss):
         self.output = None
         self.dinputs = None
 
+        # Threshold value used for calculating accuracy in binary classification.
+        # Defaults to 0.5, but can be customized via the set_threshold() method.
+        self._threshold = 0.5
+
     def forward(self, y_pred, y_true):
         """
         Forward pass to compute the binary cross-entropy loss.
@@ -79,3 +83,18 @@ class BinaryCrossEntropy(Loss):
         y_pred = np.clip(y_pred, 1e-7, 1 - 1e-7)
         self.dinputs = -(y_true / y_pred - (1 - y_true) / (1 - y_pred)) / samples
         return self.dinputs
+
+    def set_threshold(self, threshold):
+        if threshold > 1 or threshold < 0.0:
+            raise ValueError("threshold value should be in between 0 and 1")
+        
+        if threshold == 0:
+            import warnings
+
+            warnings.warn(
+                f"Threshold of {threshold} is unusual. Expected range is (0, 1). "
+                "This may result in incorrect predictions.",
+                category=UserWarning
+            )
+        
+        self._threshold = threshold
