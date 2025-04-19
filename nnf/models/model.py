@@ -39,6 +39,10 @@ class Model:
         self.clip_value = 1.0
         self.shuffle = False
 
+        # Store training data internally for later evaluation (used in model.evaluate)
+        self._X_train = None
+        self._y_train = None
+
     def set(self, loss: Loss, optimizer: Optimizer):
         """
         Set the loss function and optimizer for the model.
@@ -88,6 +92,10 @@ class Model:
             epochs (int): Number of epochs to train for.
             batch_size (int): Size of the training batches. Defaults to None.
         """
+
+        self._X_train = X
+        self._y_train = y
+        
         if batch_size is None:
             batch_size = len(X)
 
@@ -143,7 +151,9 @@ class Model:
         Returns:
             Predictions from the model.
         """
-        return self.forward(X)
+
+        self._predictions = self.forward(X)
+        return self._predictions
     
     def summary(self):
         """
@@ -219,3 +229,145 @@ class Model:
         print(f"\nTotal Layers: {len(self.layers)}")
         print(f"Total parameters: {total_params:,}")  # Formatting the total parameters with commas
         print(f"Loss: {self.loss.name}")
+    
+    def evaluate(self, X_test, y_test):
+        """
+        Evaluate the model on both training and test data.
+    
+        This method performs a forward pass using the model's training data 
+        and the provided test data, calculates the loss, accuracy, and precision 
+        for each, and displays the results in a formatted table.
+    
+        The evaluation metrics include:
+            - Training Loss
+            - Training Accuracy (percentage)
+            - Training Precision (percentage)
+            - Test Loss
+            - Test Accuracy (percentage)
+            - Test Precision (percentage)
+    
+        Parameters:
+            X_test (ndarray): Input features for the test dataset.
+            y_test (ndarray): True labels for the test dataset.
+    
+        Returns:
+            dict: A dictionary containing all evaluation metrics:
+                {
+                    "train_loss": float,
+                    "train_acc": float,
+                    "train_precision": float,
+                    "test_loss": float,
+                    "test_acc": float,
+                    "test_precision": float
+                }
+        """
+        # Training
+        train_output = self.forward(self._X_train)
+        train_loss = self.loss.calculate(train_output, self._y_train)
+        train_acc = self._calculate_accuracy(train_output, self._y_train) * 100
+        train_prec = self._calculate_precision(train_output, self._y_train) * 100
+
+        # Testing
+        test_output = self.forward(X_test)
+        test_loss = self.loss.calculate(test_output, y_test)
+        test_acc = self._calculate_accuracy(test_output, y_test) * 100
+        test_prec = self._calculate_precision(test_output, y_test) * 100
+
+        evaluation_summary = [
+            ["Training Loss", train_loss],
+            ["Training Accuracy", train_acc],
+            ["Training Precision", train_prec],
+            ["Test Loss", test_loss],
+            ["Test Loss", test_acc],
+            ["Test Loss", test_prec],
+        ]
+
+        table = tabulate(
+            evaluation_summary,
+            tablefmt="double_grid",
+            numalign="right",
+            stralign="center",
+            colalign=("center", "center")
+        )
+
+        print(table)
+        
+        return {
+            "train_loss": train_loss,
+            "train_acc": train_acc,
+            "train_precision": train_prec,  
+            "test_loss": test_loss,
+            "test_acc": test_acc,
+            "test_precision": test_prec,  
+        }
+
+    def _calculate_accuracy(self, output, y_true):
+        """
+        Calculate accuracy on the loss function.
+
+        Parameters:
+            output (ndarray): The predicted output from the model.
+            y_true (ndarray): The true labels.
+
+        Returns:
+            float: The accuracy of the model (between 0 and 1).
+        """
+        accuracy = None
+
+        if self.loss.name == "BinaryCrossEntropy":
+            predictions = (output > self.loss.threshold).astype(int)
+            accuracy = np.mean(predictions == y_true)
+
+        elif self.loss.name == "CategoricalCrossEntropy":
+            predictions = np.argmax(output, axis=1)
+            true_classes = np.argmax(y_true, axis=1)
+            accuracy = np.mean(predictions == true_classes)
+
+        return accuracy
+    
+    def _calculate_precision(self, output, y_true):
+        """
+        Calculate precision on the loss function.
+
+        Parameters:
+            output (ndarray): The predicted output from the model (probabilities or logits).
+            y_true (ndarray): The true labels (one-hot encoded for multiclass or binary labels).
+
+        Returns:
+            float: The precision of the model (between 0 and 1).
+        """
+
+        precision = None
+
+        if self.loss.name == "BinaryCrossEntropy":
+            predictions = (output > self.loss.threshold).astype(int)
+
+            tp = np.sum((predictions == 1) & (y_true == 1))
+            fp = np.sum((predictions == 1) & (y_true == 0))
+
+            if tp + fp > 0:
+                precision = tp / (tp + fp)
+            else:
+                precision = 0.0
+
+        elif self.loss.name == "CategoricalCrossEntropy":
+            predictions = np.argmax(output, axis=1)
+            true_classes = np.argmax(y_true, axis=1)
+
+            # Precision per class
+            ppc = []
+            nclasses = output.shape[1]
+
+            for class_idx in range(nclasses):
+                tp = np.sum((predictions == class_idx) & (true_classes == class_idx))
+                fp = np.sum((predictions == class_idx) & (true_classes != class_idx))
+
+                if tp + fp > 0:
+                    ppc.append(tp / (tp + fp))
+                else:
+                    ppc.append(0.0)
+
+        precision = np.mean(ppc)
+        return precision
+
+    
