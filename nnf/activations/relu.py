@@ -1,4 +1,6 @@
 import numpy as np
+from typing import override
+
 from nnf.activations.base import Activation
 
 class ReLU(Activation):
@@ -26,3 +28,10 @@ class ReLU(Activation):
         self.dinputs = dvalues.copy()
         self.dinputs[self.inputs <= 0] = 0
         return self.dinputs
+
+    @override
+    def get_params(self):
+        return {
+            "type" : "ReLU",
+            "attrs" : {}
+        }
