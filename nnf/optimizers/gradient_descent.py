@@ -1,3 +1,5 @@
+from typing import Dict, override
+
 from nnf.optimizers.base import Optimizer
 from nnf.layers.base import Layer
 
@@ -28,3 +30,18 @@ class GradientDescent(Optimizer):
     def pre_update_params(self):
         self.iterations += 1
         self.current_learning_rate = self.learning_rate / (1.0 + self.decay * self.iterations)
+
+    @override
+    def get_params(self):
+        return {
+            "type"  : "GradientDescent",
+            "attrs" : {
+                "learning_rate" : self.learning_rate,
+                "decay" : self.decay
+            }
+        }
+
+    @override
+    def set_params(self, params : Dict):
+        for key, val in params.items():
+            setattr(self, key, val)
