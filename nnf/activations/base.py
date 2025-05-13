@@ -14,3 +14,6 @@ class Activation(Layer):
     
     def backward(self, dvalues):
         raise NotImplementedError
+    
+    def get_params(self):
+        return super().get_params()

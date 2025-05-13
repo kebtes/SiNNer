@@ -1,5 +1,7 @@
 from nnf.layers.base import Layer
 
+from typing import Dict
+
 class Optimizer:
     """
     ------------------------
@@ -15,7 +17,6 @@ class Optimizer:
 
         self.name = self.__class__.__name__
 
-    
     def pre_update_params(self):
         """
         The function `pre_update_params` adjusts the current learning rate based on a decay factor and
@@ -37,3 +38,10 @@ class Optimizer:
 
         """
         self.iterations += 1
+
+    def get_params(self):
+        raise NotImplementedError("Subclasses must implement update_params()")
+    
+    def set_params(self, params : Dict):
+        raise NotImplementedError("Subclasses must implement update_params()")
+        

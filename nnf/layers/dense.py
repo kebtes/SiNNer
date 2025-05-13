@@ -1,4 +1,6 @@
 import numpy as np
+from typing import override, Dict, List
+
 from nnf.layers.base import Layer
 
 class Dense(Layer):
@@ -8,12 +10,12 @@ class Dense(Layer):
     --------------------------------------------
     """
     
-    def __init__(self, n_inputs, n_neurons):
+    def __init__(self, n_inputs = 1, n_neurons = 1):
         """
         The function initializes weights with random values and biases with zeros.
         """
         super().__init__()
-
+        
         self.n_inputs = n_inputs
         self.n_neurons = n_neurons
 
@@ -30,6 +32,7 @@ class Dense(Layer):
         self.dbiases = None
 
         # Parameters
+
         self.params = self.weights.size + self.biases.size
 
     def forward(self, inputs):
@@ -53,3 +56,30 @@ class Dense(Layer):
 
         self.dinputs = np.dot(dvalues, self.weights.T)
         return self.dinputs
+    
+    @override
+    def get_params(self):
+        return {
+            "type"  : "Dense",
+            "attrs" : {
+                "n_inputs"  : self.n_inputs,
+                "n_neurons" : self.n_neurons,
+                "trainable" : self.trainable,
+                "weights"   : self.weights,
+                "biases"    : self.biases,
+                "dweights"  : self.dweights,
+                "dbiases"   : self.dbiases
+            }  
+        }
+        
+    @override
+    def set_params(self, params : Dict):
+        for key, val in params.items():
+            # If the key is one of the specified attributes (e.g., "n_inputs", "n_neurons", etc.)
+            # and the value is a list, convert the value to a NumPy array and set it as an attribute.
+            # Basically, to how they were originally!
+            if key in ("n_inputs", "n_neurons", "weights", "biases", "dweights", "dbiases") and type(key) == List:
+                setattr(self, key, np.array(val))
+            else:
+                setattr(self, key, val)
+    

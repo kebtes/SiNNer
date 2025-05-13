@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Dict
 
 class Layer(ABC):
     def __init__(self):
@@ -19,4 +20,10 @@ class Layer(ABC):
 
     @abstractmethod
     def backward(self, dvalues):
+        pass
+
+    def get_params(self):
+        return {}
+
+    def set_params(self, params : Dict):
         pass

@@ -1,4 +1,6 @@
 import numpy as np
+from typing import override, Dict
+
 from nnf.activations.base import Activation
 
 class LeakyReLU(Activation):
@@ -50,3 +52,18 @@ class LeakyReLU(Activation):
         # For inputs <= 0, multiply the gradient by alpha
         self.dinputs[self.inputs <= 0] *= self.alpha
         return self.dinputs
+
+    @override
+    def get_params(self):
+        return {
+            "type"  : "LeakyReLU",
+            "attrs" : {
+                "alpha": self.alpha
+            }
+        }
+    
+    @override
+    def set_params(self, params : Dict):
+        for key, val in params.items():
+            setattr(self, key, val)
+        
