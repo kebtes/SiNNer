@@ -1,6 +1,9 @@
 import math
 import numpy as np
-from typing import List
+from typing import List, Dict
+import os
+from datetime import datetime
+import json
 
 from tqdm import tqdm
 from tabulate import tabulate
@@ -8,8 +11,8 @@ from tabulate import tabulate
 from nnf.layers.base import Layer
 from nnf.losses.base import Loss
 from nnf.optimizers.base import Optimizer
+from nnf.utils import LAYER_CLASSES
 
-# Module docstring
 """
 This module defines a neural network Model class that combines layers and 
 handles the training, forward pass, and backward pass operations.
@@ -274,12 +277,12 @@ class Model:
         test_prec = self._calculate_precision(test_output, y_test) * 100
 
         evaluation_summary = [
-            ["Training Loss", train_loss],
-            ["Training Accuracy", train_acc],
-            ["Training Precision", train_prec],
-            ["Test Loss", test_loss],
-            ["Test Loss", test_acc],
-            ["Test Loss", test_prec],
+            ["Training Loss"        , train_loss],
+            ["Training Accuracy"    , train_acc],
+            ["Training Precision"   , train_prec],
+            ["Test Loss"            , test_loss],
+            ["Test Accuracy"        , test_acc],
+            ["Test Precision"       , test_prec],
         ]
 
         table = tabulate(
@@ -369,5 +372,163 @@ class Model:
 
         precision = np.mean(ppc)
         return precision
-
     
+    def get_model_attrs(self):
+        """
+        Retrieves the model's attribute values.
+
+        Returns:
+            dict: A dictionary containing the model's attributes:
+                - "name": The model's name.
+                - "loss": The name of the loss function used by the model.
+                - "optimizer": The model's optimizer parameters.
+                - "clip_value": The model's clip value.
+                - "shuffle": The model's shuffle setting.
+        """
+
+        return {
+            "name"       : self.name,
+            "loss"       : self.loss.name,
+            "optimizer"  : self.optimizer.get_params(),
+            "clip_value" : self.clip_value,
+            "shuffle"    : self.shuffle
+        }
+    
+    def set_model_attrs(self, attrs : Dict):
+        """
+        Sets the model's attributes from the provided dictionary.
+
+        Args:
+            attrs (dict): A dictionary of attribute names and values to set.
+                          If a value is a dictionary with keys "type" and "attrs",
+                          it initializes a layer object from `LAYER_CLASSES` and sets its parameters.
+        """
+
+        for key, val in attrs.items():
+            if isinstance(val, dict):
+                obj = LAYER_CLASSES[val["type"]]()
+                obj.set_params(val["attrs"])
+                setattr(self, key, obj)
+            elif isinstance(val, str) and val in LAYER_CLASSES:
+                setattr(self, key, LAYER_CLASSES[val]())
+            else:
+                setattr(self, key, val)
+    
+    def __default_model_path(self):
+        """
+        Generates the default file path for saving the model.
+
+        Returns:
+            str: The path where the model will be saved (e.g., "saved_models/model_YYYYMMDD_HHMMSS.json").
+        """
+
+        model_name = None
+
+        os.makedirs("saved_models", exist_ok=True)
+
+        if not self.name:
+            model_name = datetime.now().strftime("model_%Y%m%d_%H%M%S")
+        
+        return f"saved_models/{model_name}.json"
+    
+    def save_model(self, *, file_path : str = None):
+        """
+        Saves the model to a JSON file.
+
+        Args:
+            file_path (str, optional): The path to save the model file. If not provided, a default path will be used.
+
+        """
+
+        # Converts attributes to formats suitable for JSON serialization
+        # (e.g., converting numpy arrays to Python lists)
+        def convert_types(obj):
+            if isinstance(obj, np.ndarray):
+                return obj.tolist()
+
+            return obj
+            
+        model_attrs = [] 
+        layer_attrs = []
+
+        if not file_path:
+            file_path = self.__default_model_path()
+
+        for layer in self.layers:
+            attr = layer.get_params()
+            
+            layer_attrs.append({
+                "type": attr["type"],
+                "attrs": {k: convert_types(v) for k, v in attr.get("attrs", {}).items()}
+            })
+
+        model_attrs = self.get_model_attrs()
+        
+        data = [
+            {
+                "model": model_attrs,
+                "layers": layer_attrs
+            }
+        ]
+            
+        with open(file_path, "w") as f:
+            json.dump(data, f, indent=2)
+
+        print(f"Model saved to {file_path}")
+    
+    @staticmethod
+    def load_model(file_path : str):
+        """
+        Loads a model from a JSON file.
+
+        Args:
+            file_path (str): The path to the model file to load.
+
+        Returns:
+            Model: The loaded model object.
+
+        Raises:
+            FileNotFoundError: If the model file is not found at the given file path.
+            json.JSONDecodeError: If there is an error decoding the JSON file.
+            PermissionError: If there is no permission to read the specified file.
+        """
+
+        try:
+            with open(file_path, "r") as f:
+                data = json.load(f)
+
+            data = data[0]
+
+            model_attrs = data["model"]
+            layer_attrs = data["layers"]
+
+            layers = []
+            for layer in layer_attrs:
+                layer_type = layer["type"]
+
+                attrs = layer["attrs"] if layer["attrs"] else {}
+
+                obj : Layer = LAYER_CLASSES[layer_type]()
+                obj.set_params(attrs)
+
+                layers.append(obj)
+
+            model_attrs = {
+                key: LAYER_CLASSES[val]() if isinstance(val, str) and val in LAYER_CLASSES else val
+                for key, val in model_attrs.items()
+            }
+
+            model = Model(*layers)
+            model.set_model_attrs(model_attrs)
+
+            return model
+        
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"Failed to load model. The model at '{file_path}' could not be found! - {e}")
+            
+        except json.JSONDecodeError as e:
+            raise json.JSONDecodeError(f"Error: Invalid JSON - {e}", e.doc, e.pos)
+        
+        except PermissionError:
+            raise PermissionError(f"Error loading Model. You don't have permission to read '{file_path}'")
+            
