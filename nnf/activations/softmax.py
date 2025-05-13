@@ -33,6 +33,8 @@ Methods:
 """
 
 import numpy as np
+from typing import override
+
 from nnf.activations.base import Activation
 
 class Softmax(Activation):
@@ -84,3 +86,10 @@ class Softmax(Activation):
         """
         self.dinputs = dvalues  # usually combined with loss
         return self.dinputs
+
+    @override
+    def get_params(self):
+        return {
+            "type" : "Softmax",
+            "attrs" : {}
+        }
