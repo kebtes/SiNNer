@@ -1,4 +1,6 @@
 import numpy as np
+from typing import override
+
 from nnf.activations.base import Activation
 
 class Sigmoid(Activation):
@@ -27,3 +29,10 @@ class Sigmoid(Activation):
         # derivative of the sigmoid: f'(x) = f(x) * (1 - f(x))
         self.dinputs = dvalues * (self.output * (1 - self.output))
         return self.dinputs
+    
+    @override
+    def get_params(self):
+        return {
+            "type" : "Sigmoid",
+            "attrs" : {}
+        }
