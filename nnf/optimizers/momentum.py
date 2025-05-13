@@ -1,4 +1,6 @@
 import numpy as np
+from typing import Dict, override
+
 from nnf.optimizers.base import Optimizer
 from nnf.layers.base import Layer
 
@@ -63,3 +65,19 @@ class Momentum(Optimizer):
             )
             layer.biases -= self.learning_rate * bias_velocity
             self.velocities[layer]["biases"] = bias_velocity
+
+    @override
+    def get_params(self):
+        return {
+            "type"  : "Momentum",
+            "attrs" : {
+                "learning_rate" : self.learning_rate,
+                "decay" : self.decay,
+                "momentum" : self.momentum 
+            }
+        }
+
+    @override
+    def set_params(self, params : Dict):
+        for key, val in params.items():
+            setattr(self, key, val)
