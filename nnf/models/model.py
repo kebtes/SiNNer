@@ -11,7 +11,7 @@ from tabulate import tabulate
 from nnf.layers.base import Layer
 from nnf.losses.base import Loss
 from nnf.optimizers.base import Optimizer
-from nnf.utils import LAYER_CLASSES
+from nnf.utils import LAYER_REGISTERY
 
 """
 This module defines a neural network Model class that combines layers and 
