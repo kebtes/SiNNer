@@ -13,7 +13,7 @@ from nnf.losses import CategoricalCrossEntropy
 from nnf.optimizers import GradientDescent
 from nnf.optimizers import Momentum
 
-LAYER_CLASSES = {
+LAYER_REGISTERY = {
     "Dense"                     : Dense,
     "ReLU"                      : ReLU,
     "LeakyRelU"                 : LeakyReLU,
