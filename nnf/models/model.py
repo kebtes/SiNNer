@@ -401,16 +401,16 @@ class Model:
         Args:
             attrs (dict): A dictionary of attribute names and values to set.
                           If a value is a dictionary with keys "type" and "attrs",
-                          it initializes a layer object from `LAYER_CLASSES` and sets its parameters.
+                          it initializes a layer object from `LAYER_REGISTERY` and sets its parameters.
         """
 
         for key, val in attrs.items():
             if isinstance(val, dict):
-                obj = LAYER_CLASSES[val["type"]]()
+                obj = LAYER_REGISTERY[val["type"]]()
                 obj.set_params(val["attrs"])
                 setattr(self, key, obj)
-            elif isinstance(val, str) and val in LAYER_CLASSES:
-                setattr(self, key, LAYER_CLASSES[val]())
+            elif isinstance(val, str) and val in LAYER_REGISTERY:
+                setattr(self, key, LAYER_REGISTERY[val]())
             else:
                 setattr(self, key, val)
     
@@ -508,13 +508,13 @@ class Model:
 
                 attrs = layer["attrs"] if layer["attrs"] else {}
 
-                obj : Layer = LAYER_CLASSES[layer_type]()
+                obj : Layer = LAYER_REGISTERY[layer_type]()
                 obj.set_params(attrs)
 
                 layers.append(obj)
 
             model_attrs = {
-                key: LAYER_CLASSES[val]() if isinstance(val, str) and val in LAYER_CLASSES else val
+                key: LAYER_REGISTERY[val]() if isinstance(val, str) and val in LAYER_REGISTERY else val
                 for key, val in model_attrs.items()
             }
 
